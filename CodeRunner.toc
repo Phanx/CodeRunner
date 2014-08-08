@@ -1,0 +1,14 @@
+## Interface: 50400
+## SavedVariables: CodeRunnerDB, CodeRunnerFont
+## SavedVariablesPerCharacter: CodeRunnerSelection
+
+## Title: Code Runner
+## Notes: Basic in-game Lua code editor.
+## Credits: Inspired by Tekkub's tekPad.
+
+..\PhanxMedia\LibStub\LibStub.lua
+..\PhanxMedia\libs\CallbackHandler-1.0\CallbackHandler-1.0.lua
+..\PhanxMedia\libs\LibSharedMedia-3.0\LibSharedMedia-3.0.lua
+..\PhanxConfigWidgets\PhanxConfig-ScrollingDropdown\PhanxConfig-ScrollingDropdown.lua
+
+Addon.lua
