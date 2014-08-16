@@ -10,11 +10,11 @@ local ADDON = ...
 local db, SELECTION
 local SCROLL_FRAME_HEIGHT, LINE_HEIGHT, offset, maxOffset = 332, 12, 0, 0
 
-local L_GO = "Go!"
+local L_RUN, L_REVERT, L_RELOAD = "Go!", "Revert", "Reload UI"
 if GetLocale() == "deDE" then
-	L_GO = "Los!"
+	L_RUN, L_REVERT, L_RELOAD = "Los!", "Zurück", "UI Neuladen"
 elseif GetLocale():match("es") then
-	L_GO = "Vamos!"
+	L_RUN, L_REVERT, L_RELOAD = "Vamos!", "Volver", "Recargar IU"
 end
 
 local LSM = LibStub("LibSharedMedia-3.0")
@@ -149,7 +149,7 @@ local function ScrollTo(v)
 	scrollFrame:SetVerticalScroll(-offset)
 	editBox:SetPoint("TOP", 0, offset)
 
-	local perc = offset / maxOffset
+	local perc = maxOffset == 0 and 0 or offset / maxOffset
 	scrollBar:SetValue(perc)
 	scrollBar.ScrollUpButton:SetEnabled(perc > 0.01)
 	scrollBar.ScrollDownButton:SetEnabled(perc < 0.99)
@@ -191,21 +191,38 @@ end)
 
 local runButton = CreateFrame("Button", "$parentRunButton", f, "MagicButtonTemplate")
 runButton:SetPoint("BOTTOMRIGHT", -7, 5)
-runButton:SetText("Go!") -- TODO: localize
+runButton:SetText(L_RUN)
 runButton.RightSeparator:Hide()
 f.RunButton = runButton
 
-runButton:SetScript("OnClick", function() RunScript(editBox:GetText()) end)
+runButton:SetScript("OnClick", function()
+	RunScript(editBox:GetText())
+end)
+
+------------------------------------------------------------------------
+
+local cancelButton = CreateFrame("Button", "$parentRevertButton", f, "MagicButtonTemplate")
+cancelButton:SetPoint("RIGHT", runButton, "LEFT")
+cancelButton:SetText(L_REVERT)
+cancelButton.RightSeparator:Hide()
+f.RevertButton = cancelButton
+
+cancelButton:SetScript("OnClick", function()
+	editBox:SetText(db[SELECTION])
+end)
 
 ------------------------------------------------------------------------
 
 local reloadButton = CreateFrame("Button", "$parentReloadButton", f, "MagicButtonTemplate")
 reloadButton:SetPoint("BOTTOMLEFT", 7, 5)
-reloadButton:SetText("Reload UI") -- TODO: localize
+reloadButton:SetText(L_RELOAD)
 reloadButton.LeftSeparator:Hide()
 f.ReloadButton = reloadButton
 
-reloadButton:SetScript("OnClick", ReloadUI)
+reloadButton:SetScript("OnClick", function()
+	db[SELECTION] = self:GetText()
+	ReloadUI()
+end)
 
 ------------------------------------------------------------------------
 
