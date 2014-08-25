@@ -132,11 +132,11 @@ editBox:SetScript("OnShow", function(self)
 	self:SetText(db[SELECTION] or "")
 	self:SetFocus()
 end)
-
+--[[
 local editBG = editBox:CreateTexture(nil, "BACKGROUND")
 editBG:SetAllPoints(true)
 editBG:SetTexture(0,1,0,0.1)
-
+]]
 focus = CreateFrame("Button", nil, scrollFrame)
 focus:SetAllPoints(true)
 focus:SetScript("OnClick", function(self) editBox:SetFocus() end)
@@ -299,7 +299,7 @@ f:SetScript("OnEvent", function(self, event, addon)
 
 		SELECTION = CodeRunnerSelection or UnitName("player")
 		CodeRunnerSelection = SELECTION
-		
+
 		CodeRunnerFont = CodeRunnerFont or "Consolas"
 		font:SetValue(CodeRunnerFont)
 		editBox:SetFont(LSM:Fetch("font", CodeRunnerFont), 17, "")
