@@ -220,7 +220,7 @@ reloadButton.LeftSeparator:Hide()
 f.ReloadButton = reloadButton
 
 reloadButton:SetScript("OnClick", function()
-	db[SELECTION] = self:GetText()
+	db[SELECTION] = editBox:GetText()
 	ReloadUI()
 end)
 
