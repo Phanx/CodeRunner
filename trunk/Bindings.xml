@@ -1,0 +1,5 @@
+<Bindings>
+	<Binding name="CODERUNNER_TOGGLE" header="CODERUNNER" category="ADDONS">
+		SlashCmdList.CODERUNNER("")
+	</Binding>
+</Bindings>
