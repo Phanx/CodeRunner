@@ -10,21 +10,48 @@ local ADDON = ...
 local db, SELECTION
 local SCROLL_FRAME_HEIGHT, LINE_HEIGHT, offset, maxOffset = 332, 12, 0, 0
 
-local L_RUN, L_REVERT, L_RELOAD = "Go!", "Revert", "Reload UI"
+local L = {
+	BINDING_HEADER =  GetAddOnMetadata(ADDON, "Title") or ADDON,
+	BINDING_NAME_TOGGLE = "Toggle CodeRunner",
+	RUN = "Go!",
+	SAVE = "Save",
+	REVERT = "Revert",
+	REVERT_TOOLTIP = "Go back to the previously saved version of the code. Your code is saved automatically when you close the window or reload the UI.",
+	RELOAD = "Reload UI",
+}
+
 if GetLocale() == "deDE" then
-	L_RUN, L_REVERT, L_RELOAD = "Los!", "Zurück", "UI Neuladen"
+	L.BINDING_NAME_TOGGLE = "CodeRunner an/aus"
+	L.RUN = "Los!"
+	L.SAVE = "Spiechern"
+	L.REVERT = "Zurück"
+	L.REVERT_TOOLTIP = "Auf die zuletzt gespiecherte Version des Codes zurückkehren. Der Code wird beim Schließen der Fenster oder dem Neuladen der UI automatisch gespiechert."
+	L.RELOAD = "UI Neuladen"
 elseif GetLocale():match("es") then
-	L_RUN, L_REVERT, L_RELOAD = "Vamos!", "Volver", "Recargar IU"
+	L.BINDING_NAME_TOGGLE = "Mostrar/ocultar CodeRunner"
+	L.RUN = "Vamos!"
+	L.SAVE = "Guardar"
+	L.REVERT =  "Volver"
+	L.REVERT_TOOLTIP = "Volver a la última versión guardada del codigo. El codigo se guarda automáticamente al cerrar la ventana o recargar la IU."
+	L.RELOAD =  "Recargar IU"
 end
 
-local LSM = LibStub("LibSharedMedia-3.0")
-LSM:Register("font", "Andale Mono", "Interface\\AddOns\\"..ADDON.."\\Fonts\\AndaleMono.ttf")
-LSM:Register("font", "Consolas", "Interface\\AddOns\\"..ADDON.."\\Fonts\\Consolas.ttf")
-LSM:Register("font", "Cousine", "Interface\\AddOns\\"..ADDON.."\\Fonts\\Cousine.ttf")
-LSM:Register("font", "Fira Mono", "Interface\\AddOns\\"..ADDON.."\\Fonts\\FiraMono.otf")
-LSM:Register("font", "Monaco", "Interface\\AddOns\\"..ADDON.."\\Fonts\\Monaco.ttf")
-LSM:Register("font", "PT Mono", "Interface\\AddOns\\"..ADDON.."\\Fonts\\PTMono.ttf")
-LSM:Register("font", "Source Code", "Interface\\AddOns\\"..ADDON.."\\Fonts\\SourceCodePro.otf")
+BINDING_HEADER_CODERUNNER = L.BINDING_HEADER
+BINDING_NAME_CODERUNNER_TOGGLE = L.BINDING_NAME_TOGGLE
+
+local M = LibStub("LibSharedMedia-3.0")
+do
+	local path = "Interface\\AddOns\\"..ADDON.."\\Fonts\\"
+	local hasCyrillic = bit.bor(lib.LOCALE_BIT_western, lib.LOCALE_BIT_ruRU)
+	M:Register("font", "Andale Mono", path.."AndaleMono.ttf", hasCyrillic)
+	M:Register("font", "Consolas",    path.."Consolas.ttf", hasCyrillic)
+	M:Register("font", "Cousine",     path.."Cousine.ttf", hasCyrillic)
+	M:Register("font", "Fira Mono",   path.."FiraMono.otf", hasCyrillic)
+	M:Register("font", "Inconsolata", path.."InconsolataLGC.otf", hasCyrillic)
+	M:Register("font", "Monaco",      path.."Monaco.ttf")
+	M:Register("font", "PT Mono",     path.."PTMono.ttf", hasCyrillic)
+	M:Register("font", "Source Code", path.."SourceCodePro.otf")
+end
 
 local f = CreateFrame("Frame", "CodeRunner", UIParent, "ButtonFrameTemplate")
 f:SetPoint("TOPLEFT", 16, -116)
@@ -191,7 +218,7 @@ end)
 
 local runButton = CreateFrame("Button", "$parentRunButton", f, "MagicButtonTemplate")
 runButton:SetPoint("BOTTOMRIGHT", -7, 5)
-runButton:SetText(L_RUN)
+runButton:SetText(L.RUN)
 runButton.RightSeparator:Hide()
 f.RunButton = runButton
 
@@ -203,7 +230,7 @@ end)
 
 local cancelButton = CreateFrame("Button", "$parentRevertButton", f, "MagicButtonTemplate")
 cancelButton:SetPoint("RIGHT", runButton, "LEFT")
-cancelButton:SetText(L_REVERT)
+cancelButton:SetText(L.REVERT)
 cancelButton.RightSeparator:Hide()
 f.RevertButton = cancelButton
 
@@ -215,7 +242,7 @@ end)
 
 local reloadButton = CreateFrame("Button", "$parentReloadButton", f, "MagicButtonTemplate")
 reloadButton:SetPoint("BOTTOMLEFT", 7, 5)
-reloadButton:SetText(L_RELOAD)
+reloadButton:SetText(L.RELOAD)
 reloadButton.LeftSeparator:Hide()
 f.ReloadButton = reloadButton
 
@@ -226,7 +253,7 @@ end)
 
 ------------------------------------------------------------------------
 
-local font = LibStub("PhanxConfig-ScrollingDropdown"):New(f, "Font", nil, LSM:List("font"))
+local font = LibStub("PhanxConfig-ScrollingDropdown"):New(f, "Font", nil, M:List("font"))
 font:SetPoint("TOPRIGHT", -10, -15)
 font:SetWidth(200)
 
@@ -234,7 +261,7 @@ font.labelText:ClearAllPoints()
 font.labelText:SetPoint("BOTTOMRIGHT", font, "BOTTOMLEFT", -5, 5)
 
 function font:Callback(value)
-	local file = LSM:Fetch("font", value)
+	local file = M:Fetch("font", value)
 	local _, size, flag = self.valueText:GetFont()
 	self.valueText:SetFont(file, size, flag)
 
@@ -244,13 +271,13 @@ end
 
 function font:ListButtonCallback(button, value, selected)
 	if button:IsShown() then
-		button:GetFontString():SetFont(LSM:Fetch("font", value), UIDROPDOWNMENU_DEFAULT_TEXT_HEIGHT)
+		button:GetFontString():SetFont(M:Fetch("font", value), UIDROPDOWNMENU_DEFAULT_TEXT_HEIGHT)
 	end
 end
 
 font.__SetValue = font.SetValue
 function font:SetValue(value)
-	self.valueText:SetFont(LSM:Fetch("font", value), 17, "")
+	self.valueText:SetFont(M:Fetch("font", value), 17, "")
 	self:__SetValue(value)
 end
 
@@ -302,7 +329,7 @@ f:SetScript("OnEvent", function(self, event, addon)
 
 		CodeRunnerFont = CodeRunnerFont or "Consolas"
 		font:SetValue(CodeRunnerFont)
-		editBox:SetFont(LSM:Fetch("font", CodeRunnerFont), 17, "")
+		editBox:SetFont(M:Fetch("font", CodeRunnerFont), 17, "")
 
 		if not db[SELECTION] then
 			db[SELECTION] = ""
