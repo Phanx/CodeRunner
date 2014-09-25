@@ -39,18 +39,18 @@ end
 BINDING_HEADER_CODERUNNER = L.BINDING_HEADER
 BINDING_NAME_CODERUNNER_TOGGLE = L.BINDING_NAME_TOGGLE
 
-local M = LibStub("LibSharedMedia-3.0")
+local LSM = LibStub("LibSharedMedia-3.0")
 do
 	local path = "Interface\\AddOns\\"..ADDON.."\\Fonts\\"
-	local hasCyrillic = bit.bor(lib.LOCALE_BIT_western, lib.LOCALE_BIT_ruRU)
-	M:Register("font", "Andale Mono", path.."AndaleMono.ttf", hasCyrillic)
-	M:Register("font", "Consolas",    path.."Consolas.ttf", hasCyrillic)
-	M:Register("font", "Cousine",     path.."Cousine.ttf", hasCyrillic)
-	M:Register("font", "Fira Mono",   path.."FiraMono.otf", hasCyrillic)
-	M:Register("font", "Inconsolata", path.."InconsolataLGC.otf", hasCyrillic)
-	M:Register("font", "Monaco",      path.."Monaco.ttf")
-	M:Register("font", "PT Mono",     path.."PTMono.ttf", hasCyrillic)
-	M:Register("font", "Source Code", path.."SourceCodePro.otf")
+	local hasCyrillic = bit.bor(LSM.LOCALE_BIT_western, LSM.LOCALE_BIT_ruRU)
+	LSM:Register("font", "Andale Mono", path.."AndaleMono.ttf", hasCyrillic)
+	LSM:Register("font", "Consolas",    path.."Consolas.ttf", hasCyrillic)
+	LSM:Register("font", "Cousine",     path.."Cousine.ttf", hasCyrillic)
+	LSM:Register("font", "Fira Mono",   path.."FiraMono.otf", hasCyrillic)
+	LSM:Register("font", "Inconsolata", path.."InconsolataLGC.otf", hasCyrillic)
+	LSM:Register("font", "Monaco",      path.."Monaco.ttf")
+	LSM:Register("font", "PT Mono",     path.."PTMono.ttf", hasCyrillic)
+	LSM:Register("font", "Source Code", path.."SourceCodePro.otf")
 end
 
 local f = CreateFrame("Frame", "CodeRunner", UIParent, "ButtonFrameTemplate")
@@ -253,7 +253,7 @@ end)
 
 ------------------------------------------------------------------------
 
-local font = LibStub("PhanxConfig-ScrollingDropdown"):New(f, "Font", nil, M:List("font"))
+local font = LibStub("PhanxConfig-ScrollingDropdown"):New(f, "Font", nil, LSM:List("font"))
 font:SetPoint("TOPRIGHT", -10, -15)
 font:SetWidth(200)
 
@@ -261,7 +261,7 @@ font.labelText:ClearAllPoints()
 font.labelText:SetPoint("BOTTOMRIGHT", font, "BOTTOMLEFT", -5, 5)
 
 function font:Callback(value)
-	local file = M:Fetch("font", value)
+	local file = LSM:Fetch("font", value)
 	local _, size, flag = self.valueText:GetFont()
 	self.valueText:SetFont(file, size, flag)
 
@@ -271,13 +271,13 @@ end
 
 function font:ListButtonCallback(button, value, selected)
 	if button:IsShown() then
-		button:GetFontString():SetFont(M:Fetch("font", value), UIDROPDOWNMENU_DEFAULT_TEXT_HEIGHT)
+		button:GetFontString():SetFont(LSM:Fetch("font", value), UIDROPDOWNMENU_DEFAULT_TEXT_HEIGHT)
 	end
 end
 
 font.__SetValue = font.SetValue
 function font:SetValue(value)
-	self.valueText:SetFont(M:Fetch("font", value), 17, "")
+	self.valueText:SetFont(LSM:Fetch("font", value), 17, "")
 	self:__SetValue(value)
 end
 
@@ -329,7 +329,7 @@ f:SetScript("OnEvent", function(self, event, addon)
 
 		CodeRunnerFont = CodeRunnerFont or "Consolas"
 		font:SetValue(CodeRunnerFont)
-		editBox:SetFont(M:Fetch("font", CodeRunnerFont), 17, "")
+		editBox:SetFont(LSM:Fetch("font", CodeRunnerFont), 17, "")
 
 		if not db[SELECTION] then
 			db[SELECTION] = ""
