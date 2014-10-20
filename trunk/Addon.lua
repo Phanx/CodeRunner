@@ -53,7 +53,7 @@ do
 	LSM:Register("font", "Source Code", path.."SourceCodePro.otf")
 end
 
-local f = CreateFrame("Frame", "CodeRunner", UIParent, "ButtonFrameTemplate")
+local f = CreateFrame("Frame", ADDON, UIParent, "ButtonFrameTemplate")
 f:SetPoint("TOPLEFT", 16, -116)
 f:SetWidth(800)
 f:SetHeight(425)
