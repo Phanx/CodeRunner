@@ -253,14 +253,14 @@ end)
 
 ------------------------------------------------------------------------
 
-local font = LibStub("PhanxConfig-ScrollingDropdown"):New(f, "Font", nil, LSM:List("font"))
+local font = LibStub("PhanxConfig-Dropdown"):New(f, "Font", nil, LSM:List("font"))
 font:SetPoint("TOPRIGHT", -10, -15)
 font:SetWidth(200)
 
 font.labelText:ClearAllPoints()
 font.labelText:SetPoint("BOTTOMRIGHT", font, "BOTTOMLEFT", -5, 5)
 
-function font:Callback(value)
+function font:OnValueChanged(value, text)
 	local file = LSM:Fetch("font", value)
 	local _, size, flag = self.valueText:GetFont()
 	self.valueText:SetFont(file, size, flag)
@@ -269,7 +269,7 @@ function font:Callback(value)
 	editBox:SetFont(file, 17, "")
 end
 
-function font:ListButtonCallback(button, value, selected)
+function font:OnListButtonChanged(button, value, selected)
 	if button:IsShown() then
 		button:GetFontString():SetFont(LSM:Fetch("font", value), UIDROPDOWNMENU_DEFAULT_TEXT_HEIGHT)
 	end
