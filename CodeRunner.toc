@@ -1,13 +1,13 @@
 ## Interface: 60000
 
 ## Title: Code Runner
-## Notes: Basic in-game Lua code editor.
+## Notes: Edit and run Lua code in-game.
 
 ## Author: Phanx
 ## X-Email: addons@phanx.net
-## X-Credits: Inspired by Tekkub's tekPad.
 ## X-Copyright: Copyright (c) 2014 Phanx. All rights reserved.
-## X-License: See the accompanying LICENSE file for details.
+## X-Credits: Inspired by Tekkub's tekPad.
+## X-Website: https://github.com/Phanx/CodeRunner
 
 ## SavedVariables: CodeRunnerDB, CodeRunnerFont
 ## SavedVariablesPerCharacter: CodeRunnerSelection
