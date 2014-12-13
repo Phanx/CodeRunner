@@ -6,6 +6,11 @@
 	https://github.com/Phanx/CodeRunner
 ----------------------------------------------------------------------]]
 
+local FONT_SIZE = 18
+local FONT_R, FONT_G, FONT_B = 0.85, 0.75, 0.55
+
+------------------------------------------------------------------------
+
 local ADDON = ...
 
 local db, SELECTION
@@ -20,14 +25,13 @@ local L = {
 	REVERT_TOOLTIP = "Go back to the previously saved version of the code. Your code is saved automatically when you close the window or reload the UI.",
 	RELOAD = "Reload UI",
 }
-
 if GetLocale() == "deDE" then
 	L.BINDING_NAME_TOGGLE = "CodeRunner an/aus"
 	L.RUN = "Los!"
 	L.SAVE = "Spiechern"
 	L.REVERT = "Zurück"
-	L.REVERT_TOOLTIP = "Auf die zuletzt gespiecherte Version des Codes zurückkehren. Der Code wird beim Schließen der Fenster oder dem Neuladen der UI automatisch gespiechert."
-	L.RELOAD = "UI Neuladen"
+	L.REVERT_TOOLTIP = "Auf die zuletzt gespiecherte Version des Codes zurückkehren. Der Code wird beim Schließen der Fenster oder Neuladen der UI automatisch gespiechert."
+	L.RELOAD = "UI neuladen"
 elseif GetLocale():match("es") then
 	L.BINDING_NAME_TOGGLE = "Mostrar/ocultar CodeRunner"
 	L.RUN = "Vamos!"
@@ -40,18 +44,22 @@ end
 BINDING_HEADER_CODERUNNER = L.BINDING_HEADER
 BINDING_NAME_CODERUNNER_TOGGLE = L.BINDING_NAME_TOGGLE
 
-local LSM = LibStub("LibSharedMedia-3.0")
-do
+local GetFontFile
+local LSM = LibStub and LibStub("LibSharedMedia-3.0", true)
+if LSM then
 	local path = "Interface\\AddOns\\"..ADDON.."\\Fonts\\"
 	local hasCyrillic = bit.bor(LSM.LOCALE_BIT_western, LSM.LOCALE_BIT_ruRU)
-	LSM:Register("font", "Andale Mono", path.."AndaleMono.ttf", hasCyrillic)
-	LSM:Register("font", "Consolas",    path.."Consolas.ttf", hasCyrillic)
-	LSM:Register("font", "Cousine",     path.."Cousine.ttf", hasCyrillic)
-	LSM:Register("font", "Fira Mono",   path.."FiraMono.otf", hasCyrillic)
+	LSM:Register("font", "Consolas",    path.."Consolas.ttf",       hasCyrillic)
+	LSM:Register("font", "Cousine",     path.."Cousine.ttf",        hasCyrillic)
 	LSM:Register("font", "Inconsolata", path.."InconsolataLGC.otf", hasCyrillic)
-	LSM:Register("font", "Monaco",      path.."Monaco.ttf")
-	LSM:Register("font", "PT Mono",     path.."PTMono.ttf", hasCyrillic)
-	LSM:Register("font", "Source Code", path.."SourceCodePro.otf")
+
+	function GetFontFile()
+		return LSM:Fetch("font", CodeRunnerFont or "Inconsolata")
+	end
+else
+	function GetFontFile()
+		return "Interface\\AddOns\\"..ADDON.."\\Fonts\\InconsolataLGC.otf"
+	end
 end
 
 local f = CreateFrame("Frame", ADDON, UIParent, "ButtonFrameTemplate")
@@ -143,6 +151,7 @@ editBox:SetPoint("LEFT")
 editBox:SetPoint("RIGHT")
 editBox:SetHeight(1000)
 editBox:SetFontObject(GameFontHighlight)
+editBox:SetTextColor(FONT_R, FONT_G, FONT_B)
 editBox:SetTextInsets(5,5,5,5)
 editBox:SetAutoFocus(false)
 editBox:SetMultiLine(true)
@@ -254,32 +263,35 @@ end)
 
 ------------------------------------------------------------------------
 
-local font = LibStub("PhanxConfig-Dropdown"):New(f, "Font", nil, LSM:List("font"))
-font:SetPoint("TOPRIGHT", -10, -15)
-font:SetWidth(200)
+if LSM and LibStub("PhanxConfig-Dropdown", true) then
+	local font = LibStub("PhanxConfig-Dropdown"):New(f, "Font", nil, LSM:List("font"))
+	font:SetPoint("TOPRIGHT", -10, -15)
+	font:SetWidth(200)
+	f.fontMenu = font
 
-font.labelText:ClearAllPoints()
-font.labelText:SetPoint("BOTTOMRIGHT", font, "BOTTOMLEFT", -5, 5)
+	font.labelText:ClearAllPoints()
+	font.labelText:SetPoint("BOTTOMRIGHT", font, "BOTTOMLEFT", -5, 5)
 
-function font:OnValueChanged(value, text)
-	local file = LSM:Fetch("font", value)
-	local _, size, flag = self.valueText:GetFont()
-	self.valueText:SetFont(file, size, flag)
+	function font:OnValueChanged(value, text)
+		local file = LSM:Fetch("font", value)
+		local _, size, flag = self.valueText:GetFont()
+		self.valueText:SetFont(file, size, flag)
 
-	CodeRunnerFont = value
-	editBox:SetFont(file, 17, "")
-end
-
-function font:OnListButtonChanged(button, value, selected)
-	if button:IsShown() then
-		button:GetFontString():SetFont(LSM:Fetch("font", value), UIDROPDOWNMENU_DEFAULT_TEXT_HEIGHT)
+		CodeRunnerFont = value
+		editBox:SetFont(file, FONT_SIZE, "")
 	end
-end
 
-font.__SetValue = font.SetValue
-function font:SetValue(value)
-	self.valueText:SetFont(LSM:Fetch("font", value), 17, "")
-	self:__SetValue(value)
+	function font:OnListButtonChanged(button, value, selected)
+		if button:IsShown() then
+			button:GetFontString():SetFont(LSM:Fetch("font", value), UIDROPDOWNMENU_DEFAULT_TEXT_HEIGHT)
+		end
+	end
+
+	font.__SetValue = font.SetValue
+	function font:SetValue(value)
+		self.valueText:SetFont(LSM:Fetch("font", value), FONT_SIZE, "")
+		self:__SetValue(value)
+	end
 end
 
 ------------------------------------------------------------------------
@@ -328,9 +340,11 @@ f:SetScript("OnEvent", function(self, event, addon)
 		SELECTION = CodeRunnerSelection or UnitName("player")
 		CodeRunnerSelection = SELECTION
 
-		CodeRunnerFont = CodeRunnerFont or "Consolas"
-		font:SetValue(CodeRunnerFont)
-		editBox:SetFont(LSM:Fetch("font", CodeRunnerFont), 17, "")
+		CodeRunnerFont = CodeRunnerFont or "Inconsolata"
+		editBox:SetFont(GetFontFile(), FONT_SIZE)
+		if self.fontMenu then
+			self.fontMenu:SetValue(CodeRunnerFont)
+		end
 
 		if not db[SELECTION] then
 			db[SELECTION] = ""
