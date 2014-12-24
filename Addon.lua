@@ -162,7 +162,7 @@ f:SetScript("OnShow", function(f)
 	f.EditBox = editBox
 
 	editBox:SetScript("OnEscapePressed", editBox.ClearFocus)
-	editBox:SetScript("OnTabPressed", function(self) self:Insert("   ") end)
+	editBox:SetScript("OnTabPressed", function(self) self:Insert("    ") end)
 	editBox:SetScript("OnEditFocusGained", function(self) focus:Hide() end)
 	editBox:SetScript("OnEditFocusLost", function(self)
 		db[SELECTION] = self:GetText()
