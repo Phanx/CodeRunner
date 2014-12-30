@@ -84,8 +84,6 @@ SetPortraitToTexture(f.portrait, "Interface\\AddOns\\" .. ADDON .. "\\Portrait")
 ------------------------------------------------------------------------
 
 f:SetScript("OnShow", function(f)
-	f:SetScript("OnShow", nil)
-
 	local drag = CreateFrame("Button", nil, f)
 	drag:SetPoint("TOPLEFT", CodeRunnerTitleBg, 40, 0)
 	drag:SetPoint("BOTTOMRIGHT", CodeRunnerTitleBg)
@@ -248,10 +246,6 @@ f:SetScript("OnShow", function(f)
 	cancelButton.RightSeparator:Hide()
 	f.RevertButton = cancelButton
 
-	cancelButton:SetScript("OnClick", function()
-		editBox:SetText(db[SELECTION])
-	end)
-
 	------------------------------------------------------------------------
 
 	local reloadButton = CreateFrame("Button", "$parentReloadButton", f, "MagicButtonTemplate")
@@ -259,11 +253,6 @@ f:SetScript("OnShow", function(f)
 	reloadButton:SetText(L.RELOAD)
 	reloadButton.LeftSeparator:Hide()
 	f.ReloadButton = reloadButton
-
-	reloadButton:SetScript("OnClick", function()
-		db[SELECTION] = editBox:GetText()
-		ReloadUI()
-	end)
 
 	------------------------------------------------------------------------
 
@@ -296,11 +285,23 @@ f:SetScript("OnShow", function(f)
 			self.valueText:SetFont(LSM:Fetch("font", value), FONT_SIZE, "")
 			self:__SetValue(value)
 		end
-		
+
 		font:SetValue(CodeRunnerFont)
 	end
 
 	------------------------------------------------------------------------
+
+	-- Load saved code OnShow or on cancel
+	f:Load()
+	f:SetScript("OnShow", f.Load)
+	cancelButton:SetScript("OnClick", f.Load)
+
+	-- Save written code on hide or on reload
+	f:SetScript("OnHide", f.Save)
+	reloadButton:SetScript("OnClick", function()
+		f:Save()
+		ReloadUI()
+	end)
 
 end) -- f:OnShow
 
@@ -331,6 +332,15 @@ if LDB then
 end
 
 ------------------------------------------------------------------------
+
+function f:Load()
+	self.EditBox:SetText(db[SELECTION] or "")
+end
+
+function f:Save()
+	local text = strtrim(self.EditBox:GetText())
+	db[SELECTION] = strlen(text) > 0 and text or nil
+end
 
 f:RegisterEvent("ADDON_LOADED")
 f:SetScript("OnEvent", function(self, event, addon)
