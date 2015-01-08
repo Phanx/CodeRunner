@@ -12,8 +12,8 @@ local FONT_R, FONT_G, FONT_B = 0.85, 0.75, 0.55
 ------------------------------------------------------------------------
 
 local ADDON = ...
-
-local db, SELECTION
+local db, SELECTION, GetFontFile
+local LSM = LibStub and LibStub("LibSharedMedia-3.0", true)
 local SCROLL_FRAME_HEIGHT, LINE_HEIGHT, offset, maxOffset = 332, 12, 0, 0
 
 local L = {
@@ -28,9 +28,9 @@ local L = {
 if GetLocale() == "deDE" then
 	L.BINDING_NAME_TOGGLE = "CodeRunner an/aus"
 	L.RUN = "Los!"
-	L.SAVE = "Spiechern"
+	L.SAVE = "Speichern"
 	L.REVERT = "Zurück"
-	L.REVERT_TOOLTIP = "Auf die zuletzt gespiecherte Version des Codes zurückkehren. Der Code wird beim Schließen der Fenster oder Neuladen der UI automatisch gespiechert."
+	L.REVERT_TOOLTIP = "Auf die zuletzt gespeicherte Version des Codes zurückkehren. Der Code wird beim Schließen des Fensters oder Neuladen der UI automatisch gespeichert."
 	L.RELOAD = "UI neuladen"
 elseif GetLocale():match("es") then
 	L.BINDING_NAME_TOGGLE = "Mostrar/ocultar CodeRunner"
@@ -44,31 +44,11 @@ end
 BINDING_HEADER_CODERUNNER = L.BINDING_HEADER
 BINDING_NAME_CODERUNNER_TOGGLE = L.BINDING_NAME_TOGGLE
 
-local GetFontFile
-local LSM = LibStub and LibStub("LibSharedMedia-3.0", true)
-if LSM then
-	local path = "Interface\\AddOns\\"..ADDON.."\\Fonts\\"
-	local hasCyrillic = bit.bor(LSM.LOCALE_BIT_western, LSM.LOCALE_BIT_ruRU)
-	LSM:Register("font", "Consolas",    path.."Consolas.ttf",       hasCyrillic)
-	LSM:Register("font", "Cousine",     path.."Cousine.ttf",        hasCyrillic)
-	LSM:Register("font", "Inconsolata", path.."InconsolataLGC.otf", hasCyrillic)
-
-	function GetFontFile()
-		return LSM:Fetch("font", CodeRunnerFont or "Inconsolata")
-	end
-else
-	function GetFontFile()
-		return "Interface\\AddOns\\"..ADDON.."\\Fonts\\InconsolataLGC.otf"
-	end
-end
+------------------------------------------------------------------------
 
 local f = CreateFrame("Frame", ADDON, UIParent, "ButtonFrameTemplate")
 f:SetPoint("TOPLEFT", 16, -116)
-f:SetWidth(800)
-f:SetHeight(425)
-f:EnableMouse(true)
-f:SetMovable(true)
-f:SetClampedToScreen(true)
+f:SetSize(800, 425)
 f:Hide()
 
 f:SetAttribute("UIPanelLayout-defined", true)
@@ -78,12 +58,66 @@ f:SetAttribute("UIPanelLayout-pushable", 3)
 f:SetAttribute("UIPanelLayout-whileDead", true)
 tinsert(UISpecialFrames, ADDON)
 
-f.TitleText:SetText(ADDON)
-SetPortraitToTexture(f.portrait, "Interface\\AddOns\\" .. ADDON .. "\\Portrait")
+------------------------------------------------------------------------
+
+function f:Load()
+	self.EditBox:SetText(db[SELECTION] or "")
+end
+
+function f:Save()
+	local text = strtrim(self.EditBox:GetText())
+	db[SELECTION] = strlen(text) > 0 and text or nil
+end
+
+f:RegisterEvent("PLAYER_LOGIN")
+f:RegisterEvent("PLAYER_LOGOUT")
+f:SetScript("OnEvent", function(self, event, addon)
+	if event == "PLAYER_LOGIN" then
+		db = CodeRunnerDB or {}
+		CodeRunnerDB = db
+
+		SELECTION = CodeRunnerSelection or UnitName("player")
+		CodeRunnerSelection = SELECTION
+
+		CodeRunnerFont = CodeRunnerFont or "Inconsolata"
+
+		if not db[SELECTION] then
+			db[SELECTION] = ""
+		end
+
+		if LSM then
+			local path = "Interface\\AddOns\\"..ADDON.."\\Fonts\\"
+			local hasCyrillic = bit.bor(LSM.LOCALE_BIT_western, LSM.LOCALE_BIT_ruRU)
+			LSM:Register("font", "Consolas",    path.."Consolas.ttf",       hasCyrillic)
+			LSM:Register("font", "Cousine",     path.."Cousine.ttf",        hasCyrillic)
+			LSM:Register("font", "Inconsolata", path.."InconsolataLGC.otf", hasCyrillic)
+			function GetFontFile()
+				return LSM:Fetch("font", CodeRunnerFont or "Inconsolata")
+			end
+		else
+			function GetFontFile()
+				return "Interface\\AddOns\\"..ADDON.."\\Fonts\\InconsolataLGC.otf"
+			end
+		end
+	else
+		for k, v in pairs(db) do
+			if v == "" then
+				db[k] = nil
+			end
+		end
+	end
+end)
 
 ------------------------------------------------------------------------
 
 f:SetScript("OnShow", function(f)
+	f:EnableMouse(true)
+	f:SetMovable(true)
+	f:SetClampedToScreen(true)
+
+	f.TitleText:SetText(ADDON)
+	SetPortraitToTexture(f.portrait, "Interface\\AddOns\\" .. ADDON .. "\\Portrait")
+
 	local drag = CreateFrame("Button", nil, f)
 	drag:SetPoint("TOPLEFT", CodeRunnerTitleBg, 40, 0)
 	drag:SetPoint("BOTTOMRIGHT", CodeRunnerTitleBg)
@@ -330,40 +364,3 @@ if LDB then
 		OnClick = SlashCmdList.CODERUNNER,
 	})
 end
-
-------------------------------------------------------------------------
-
-function f:Load()
-	self.EditBox:SetText(db[SELECTION] or "")
-end
-
-function f:Save()
-	local text = strtrim(self.EditBox:GetText())
-	db[SELECTION] = strlen(text) > 0 and text or nil
-end
-
-f:RegisterEvent("ADDON_LOADED")
-f:SetScript("OnEvent", function(self, event, addon)
-	if event == "PLAYER_LOGOUT" then
-		for k, v in pairs(db) do
-			if v == "" then
-				db[k] = nil
-			end
-		end
-	elseif addon == ADDON then
-		self:UnregisterEvent(event)
-		self:RegisterEvent("PLAYER_LOGOUT")
-
-		db = CodeRunnerDB or {}
-		CodeRunnerDB = db
-
-		SELECTION = CodeRunnerSelection or UnitName("player")
-		CodeRunnerSelection = SELECTION
-
-		CodeRunnerFont = CodeRunnerFont or "Inconsolata"
-
-		if not db[SELECTION] then
-			db[SELECTION] = ""
-		end
-	end
-end)
