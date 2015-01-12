@@ -2,12 +2,12 @@
 	Code Runner
 	Edit and run Lua code in-game.
 	Inspired by Tekkub's addon tekPad.
-	Copyright (c) 2014 Phanx <addons@phanx.net>. All rights reserved.
+	Copyright (c) 2014-2015 Phanx <addons@phanx.net>. All rights reserved.
 	https://github.com/Phanx/CodeRunner
 ----------------------------------------------------------------------]]
 
 local FONT_SIZE = 18
-local FONT_R, FONT_G, FONT_B = 0.85, 0.75, 0.55
+local FONT_R, FONT_G, FONT_B = 0.95, 0.85, 0.65
 
 ------------------------------------------------------------------------
 
@@ -61,11 +61,12 @@ tinsert(UISpecialFrames, ADDON)
 ------------------------------------------------------------------------
 
 function f:Load()
-	self.EditBox:SetText(db[SELECTION] or "")
+	-- use f instead of self because this is set as the cancel button OnClick script too
+	f.EditBox:SetText(db[SELECTION] or "")
 end
 
 function f:Save()
-	local text = strtrim(self.EditBox:GetText())
+	local text = strtrim(f.EditBox:GetText())
 	db[SELECTION] = strlen(text) > 0 and text or nil
 end
 
@@ -88,15 +89,15 @@ f:SetScript("OnEvent", function(self, event, addon)
 		if LSM then
 			local path = "Interface\\AddOns\\"..ADDON.."\\Fonts\\"
 			local hasCyrillic = bit.bor(LSM.LOCALE_BIT_western, LSM.LOCALE_BIT_ruRU)
-			LSM:Register("font", "Consolas",    path.."Consolas.ttf",       hasCyrillic)
 			LSM:Register("font", "Cousine",     path.."Cousine.ttf",        hasCyrillic)
 			LSM:Register("font", "Inconsolata", path.."InconsolataLGC.otf", hasCyrillic)
 			function GetFontFile()
 				return LSM:Fetch("font", CodeRunnerFont or "Inconsolata")
 			end
 		else
+			local default = "Interface\\AddOns\\"..ADDON.."\\Fonts\\InconsolataLGC.ttf"
 			function GetFontFile()
-				return "Interface\\AddOns\\"..ADDON.."\\Fonts\\InconsolataLGC.otf"
+				return default
 			end
 		end
 	else
@@ -264,8 +265,8 @@ f:SetScript("OnShow", function(f)
 
 	local runButton = CreateFrame("Button", "$parentRunButton", f, "MagicButtonTemplate")
 	runButton:SetPoint("BOTTOMRIGHT", -7, 5)
-	runButton:SetText(L.RUN)
 	runButton.RightSeparator:Hide()
+	runButton:SetText(L.RUN)
 	f.RunButton = runButton
 
 	runButton:SetScript("OnClick", function()
@@ -276,22 +277,30 @@ f:SetScript("OnShow", function(f)
 
 	local cancelButton = CreateFrame("Button", "$parentRevertButton", f, "MagicButtonTemplate")
 	cancelButton:SetPoint("RIGHT", runButton, "LEFT")
-	cancelButton:SetText(L.REVERT)
 	cancelButton.RightSeparator:Hide()
+	cancelButton:SetText(L.REVERT)
 	f.RevertButton = cancelButton
 
 	------------------------------------------------------------------------
 
 	local reloadButton = CreateFrame("Button", "$parentReloadButton", f, "MagicButtonTemplate")
 	reloadButton:SetPoint("BOTTOMLEFT", 7, 5)
-	reloadButton:SetText(L.RELOAD)
 	reloadButton.LeftSeparator:Hide()
+	reloadButton:SetText(L.RELOAD)
+	reloadButton:SetWidth(max(110, reloadButton:GetFontString():GetStringWidth() + 28))
 	f.ReloadButton = reloadButton
 
 	------------------------------------------------------------------------
 
-	if LSM and LibStub("PhanxConfig-Dropdown", true) then
-		local font = LibStub("PhanxConfig-Dropdown"):New(f, "Font", nil, LSM:List("font"))
+	local buttonWidth = max(110, reloadButton:GetFontString():GetStringWidth() + 28, cancelButton:GetFontString():GetStringWidth() + 28, runButton:GetFontString():GetStringWidth() + 28)
+	reloadButton:SetWidth(buttonWidth)
+	cancelButton:SetWidth(buttonWidth)
+	runButton:SetWidth(buttonWidth)
+
+	------------------------------------------------------------------------
+
+	if LSM and LibStub("PhanxConfig-MediaDropdown", true) then
+		local font = LibStub("PhanxConfig-MediaDropdown"):New(f, "Font", nil, "font")
 		font:SetPoint("TOPRIGHT", -10, -15)
 		font:SetWidth(200)
 		f.fontMenu = font
@@ -300,24 +309,8 @@ f:SetScript("OnShow", function(f)
 		font.labelText:SetPoint("BOTTOMRIGHT", font, "BOTTOMLEFT", -5, 5)
 
 		function font:OnValueChanged(value, text)
-			local file = LSM:Fetch("font", value)
-			local _, size, flag = self.valueText:GetFont()
-			self.valueText:SetFont(file, size, flag)
-
 			CodeRunnerFont = value
-			editBox:SetFont(file, FONT_SIZE, "")
-		end
-
-		function font:OnListButtonChanged(button, value, selected)
-			if button:IsShown() then
-				button:GetFontString():SetFont(LSM:Fetch("font", value), UIDROPDOWNMENU_DEFAULT_TEXT_HEIGHT)
-			end
-		end
-
-		font.__SetValue = font.SetValue
-		function font:SetValue(value)
-			self.valueText:SetFont(LSM:Fetch("font", value), FONT_SIZE, "")
-			self:__SetValue(value)
+			editBox:SetFont(LSM:Fetch("font", value), FONT_SIZE, "")
 		end
 
 		font:SetValue(CodeRunnerFont)
