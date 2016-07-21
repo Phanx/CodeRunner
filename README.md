@@ -1,6 +1,8 @@
 CodeRunner
 =============
 
-**EN** — Edit and run Lua code in-game.
+World of Warcraft addon to edit and run Lua code in-game.
 
-*This addon has not been publicly released yet. No support will be provided. Use at your own risk.*
+Not formally released -- no support will be provided, and it's not my problem if you are eaten by a grue.
+
+

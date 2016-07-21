@@ -1,11 +1,11 @@
-## Interface: 60100
+## Interface: 70000
 
 ## Title: Code Runner
 ## Notes: Edit and run Lua code in-game.
 
 ## Author: Phanx
 ## X-Email: addons@phanx.net
-## X-Copyright: Copyright (c) 2014-2015 Phanx. All rights reserved.
+## X-Copyright: Copyright (c) 2014-2016 Phanx. All rights reserved.
 ## X-Credits: Inspired by Tekkub's tekPad.
 ## X-Website: https://github.com/Phanx/CodeRunner
 
@@ -13,10 +13,12 @@
 ## SavedVariablesPerCharacter: CodeRunnerSelection
 
 ## OptionalDependencies: LibSharedMedia-3.0, PhanxConfigWidgets
+
 Libs\LibStub\LibStub.lua
 Libs\CallbackHandler-1.0\CallbackHandler-1.0.lua
 Libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
 Libs\LibSharedMedia-3.0\LibSharedMedia-3.0.lua
 Libs\PhanxConfig-Dropdown\PhanxConfig-Dropdown.lua
+Libs\PhanxConfig-MediaDropdown\PhanxConfig-MediaDropdown.lua
 
 Addon.lua

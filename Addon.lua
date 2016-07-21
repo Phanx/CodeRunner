@@ -2,7 +2,7 @@
 	Code Runner
 	Edit and run Lua code in-game.
 	Inspired by Tekkub's addon tekPad.
-	Copyright (c) 2014-2015 Phanx <addons@phanx.net>. All rights reserved.
+	Copyright (c) 2014-2016 Phanx <addons@phanx.net>. All rights reserved.
 	https://github.com/Phanx/CodeRunner
 ----------------------------------------------------------------------]]
 
