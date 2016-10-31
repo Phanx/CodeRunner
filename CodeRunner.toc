@@ -1,4 +1,4 @@
-## Interface: 70000
+## Interface: 70100
 
 ## Title: Code Runner
 ## Notes: Edit and run Lua code in-game.
