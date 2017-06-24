@@ -162,10 +162,11 @@ f:SetScript("OnShow", function(f)
 	local scrollFrame = CreateFrame("ScrollFrame", "$parentScrollFrame", f)
 	scrollFrame:SetPoint("TOPLEFT", 8, -64)
 	scrollFrame:SetPoint("BOTTOMRIGHT", -32, 29)
+	scrollFrame:SetClipsChildren(true)
 	SCROLL_FRAME_HEIGHT = scrollFrame:GetHeight()
 	f.ScrollFrame = scrollFrame
 
-	local scrollBar = CreateFrame("Slider", "$parentScrollBar", scrollFrame, "UIPanelScrollBarTemplate")
+	local scrollBar = CreateFrame("Slider", "$parentScrollBar", f, "UIPanelScrollBarTemplate")
 	scrollBar:SetPoint("TOPLEFT", scrollFrame, "TOPRIGHT", 6, -16)
 	scrollBar:SetPoint("BOTTOMLEFT", scrollFrame, "BOTTOMRIGHT", 6, 16)
 	scrollBar:SetScript("OnValueChanged", nil) -- remove default
